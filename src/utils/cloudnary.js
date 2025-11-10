@@ -1,5 +1,5 @@
-import { v2 } from "cloudinary";
-import fs from "fs";
+import { v2 as cloudinary } from "cloudinary";
+import fs, { unlink } from "fs";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,26 +9,40 @@ cloudinary.config({
 
 const uploadOnCloudinary = async (localFilePath) => {
     try {
-        if(!localFilePath) {
+        if (!localFilePath) {
             throw new Error("File path is required");
         }
-        // Upload file to Cloudinary
+
+        if (!fs.existsSync(localFilePath)) {
+            throw new Error(`Local file not found: ${localFilePath}`);
+        }
+
+        // Upload file to Cloudinary (image only)
         const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto",
+            resource_type: "image",
         });
+
         console.log("File uploaded successfully to Cloudinary:", response);
+
+        // remove local temp file after successful upload
+        try {
+            fs.unlinkSync(localFilePath);
+        } catch (err) {
+            // non-fatal
+            console.warn("Failed to delete temp file:", err.message);
+        }
         return response;
-    }catch (error) {
-        fs.unlinkSync(localFilePath); // Delete the local file after upload attempt got failed
+    } catch (error) {
+        // attempt to remove local file if it exists
+        try {
+            if (localFilePath && fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+        } catch (e) {
+            // ignore
+        }
+
         console.error("Error uploading file to Cloudinary:", error);
         throw error;
     }
-
-cloudinary.v2.uploader.upload("https://wikimidia.org/wikipedia/commons/a/ae/Olympic_flag.jpg",
-    { public_id: "olympic_flags" },
-    function (error, result) {
-        console.log(result, error);
-    }
-);
 };
+
 export { uploadOnCloudinary };
