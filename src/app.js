@@ -12,6 +12,11 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(express.static('public'));
 app.use(cookieParser());
 
+// Health check route
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
+
 // routes would be added here
 import userRoutes from './routes/user.routes.js';
 

@@ -5,17 +5,19 @@ import connectToDatabase from "./db/index.js";
 import dotenv from "dotenv";
 import app from "./app.js";
 dotenv.config({
-    path: "./env"
+    path: "./.env"
 });
 connectToDatabase().then(() => {
     app.on("error", (err) => {
-      console.error("Server error:", err);
+      console.error("❌ Server error:", err);
     });
-    app.listen(process.env.PORT, () => {
-      console.log(`Server is running on port ${process.env.PORT}`);
+    app.listen(process.env.PORT || 8080, () => {
+      console.log(`✅ Server is running on port ${process.env.PORT || 8080}`);
+      console.log(`🚀 API Available at: http://localhost:${process.env.PORT || 8080}/api/v1/users/register`);
     });
 }).catch((error) => {
-    console.error("Database connection error:", error);
+    console.error("❌ Database connection error:", error);
+    process.exit(1);
 });
 
 
