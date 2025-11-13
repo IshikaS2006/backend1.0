@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudnary.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import delOldImg from "../utils/delOldImg.js";
 
 const generateAccessAndRefreshToken = async (user) => {
     try {
@@ -185,6 +186,10 @@ const avatarUpdate = asynchandler(async (req, res) => {
     if (!avatar.url) {
         throw new ApiError(400, "Avatar upload failed");
     }
+    // Delete old avatar image from Cloudinary
+    const userRecord = await User.findById(req.user._id);   
+    await delOldImg(userRecord.avatar);
+
     const user = await User.findByIdAndUpdate(
         req.user._id,
         { $set: { avatar: avatar.url } },
@@ -199,6 +204,9 @@ const coverImageUpdate = asynchandler(async (req, res) => {
     if (!coverlocalfilepath) {
         throw new ApiError(400, "coverImage image is required");
     }
+    // Delete old cover image from Cloudinary
+    const userRecord = await User.findById(req.user._id);
+    await delOldImg(userRecord.coverImage);
     const coverImage = await uploadOnCloudinary(coverlocalfilepath)
     if (!coverImage.url) {
         throw new ApiError(400, "coverImage upload failed");
