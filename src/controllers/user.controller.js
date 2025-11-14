@@ -325,7 +325,36 @@ const getUserChannelProfile = asynchandler(async (req, res) => {
         );
 });
 
+const getWatchHistory = asynchandler(async (req, res) => {
+    // Implementation for fetching watch history
+    const user= await User.aggregate([
+        {
+            $match: { _id: req.user._id }
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchedVideos",
+                pipeline: [
+                    { $project: { fullname:1,  username:1, avatar:1, }}, 
+                    {
+                        $addFields: {
+                            owner: "$owner"
+                        }
+                    }
+                ]
+            }   
+            }
 
+        
+    ]);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Watch history fetched successfully", user[0].watchedVideos));
+});
 // EXPORTS
 export {
     registerUser,
@@ -336,5 +365,6 @@ export {
     updateAccountDetails,
     avatarUpdate,
     coverImageUpdate,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getWatchHistory
 };
