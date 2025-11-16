@@ -9,8 +9,7 @@ const userSchema = new Schema({
   avatar: { type: String,  required: true },
   coverImage: { type: String},
   watchHistory: [{ type: Schema.Types.ObjectId, ref: 'Video' }],
-  password:{ type: String, required: [true, 'Password is required'] },
-  refreshTokens: { type: String },
+  refreshToken: { type: String },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -25,7 +24,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     { userId: this._id, username: this.username },
-    process.env.ACCCESS_TOKEN_SECRET,
+    process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_LIFE }
   );
 }

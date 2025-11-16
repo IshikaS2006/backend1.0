@@ -6,16 +6,17 @@ class ApiError extends Error {
         errors = []
     ) {
         super(message);
+
         this.statusCode = statusCode;
         this.message = message;
-        this.stack = stack;
         this.errors = errors;
         this.data = null;
         this.success = false;
-    }
-    if (stack) {
-        this.stack = stack;
-    } 
 
+        if (stack) {
+            this.stack = stack;
+        }
+    }
 }
-export default ApiError;
+
+export { ApiError };
