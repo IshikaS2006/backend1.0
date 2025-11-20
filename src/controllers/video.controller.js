@@ -10,6 +10,29 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
     //TODO: get all videos based on query, sort, pagination
+    const filter = { isPublished: true }
+    if (query) {
+        filter.$or = [
+            { title: { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } }
+        ]
+    }
+    if (userId && isValidObjectId(userId)) {
+        filter.owner = mongoose.Types.ObjectId(userId)
+    }
+    const sortOptions = {}
+    if (sortBy) {
+        sortOptions[sortBy] = sortType === 'desc' ? -1 : 1
+    } else {
+        sortOptions.createdAt = -1 // Default sort by creation date descending
+    }
+    const videos = await Video.find(filter)
+        .sort(sortOptions)
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit))
+        .populate("owner", "name email")
+
+    res.status(200).json(new ApiResponse(true, "Videos retrieved successfully", videos))
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
